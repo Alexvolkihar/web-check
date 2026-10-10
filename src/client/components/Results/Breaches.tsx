@@ -9,7 +9,12 @@ const BreachesCard = (props: { data: any; title: string; actionButtons: any }): 
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
       <Row lbl="Domain" val={domain} />
-      <Row lbl="Breaches" val={breaches.length || 'None'} {...fromFinding(result)} />
+      <Row
+        lbl="Breaches"
+        val={breaches.length || 'None'}
+        term="data-breach"
+        {...fromFinding(result)}
+      />
       {breaches.map((breach: any) => (
         <ExpandableRow
           key={breach.name}

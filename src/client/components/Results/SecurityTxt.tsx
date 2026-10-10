@@ -10,14 +10,36 @@ const SecurityTxtCard = (props: { data: any; title: string; actionButtons: any }
   const expires = checkExpires(fields);
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
-      <Row lbl="Present" val={!!isPresent} status={isPresent ? 'pass' : 'warning'} />
+      <Row
+        lbl="Present"
+        val={!!isPresent}
+        status={isPresent ? 'pass' : 'warning'}
+        term="security-txt"
+      />
       {isPresent && (
         <>
           <Row lbl="File Location" val={foundIn} />
-          <Row lbl="PGP Signed" val={!!isPgpSigned} status={isPgpSigned ? 'pass' : 'info'} />
-          {contact && <Row lbl="Contact" val="Missing" {...fromFinding(contact)} />}
+          <Row
+            lbl="PGP Signed"
+            val={!!isPgpSigned}
+            status={isPgpSigned ? 'pass' : 'info'}
+            term="security-txt-signature"
+          />
+          {contact && (
+            <Row
+              lbl="Contact"
+              val="Missing"
+              term="security-txt-contact"
+              {...fromFinding(contact)}
+            />
+          )}
           {!getField(fields, 'expires') && (
-            <Row lbl="Expires" val="Missing" {...fromFinding(expires)} />
+            <Row
+              lbl="Expires"
+              val="Missing"
+              term="security-txt-expires"
+              {...fromFinding(expires)}
+            />
           )}
           {Object.entries(fields).map(([field, value]: [string, any]) => {
             const isLink = value.includes('http');
@@ -27,6 +49,7 @@ const SecurityTxtCard = (props: { data: any; title: string; actionButtons: any }
                 lbl={field}
                 val={isLink ? getPath(value) : value}
                 link={isLink ? value : undefined}
+                term="security-txt-expires"
                 {...fromFinding(field.toLowerCase() === 'expires' ? expires : null)}
               />
             );

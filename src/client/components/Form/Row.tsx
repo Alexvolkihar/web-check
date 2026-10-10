@@ -3,11 +3,15 @@ import styled from '@emotion/styled';
 import colors from 'client/styles/colors';
 import Heading from 'client/components/Form/Heading';
 import { StatusIcon, type Status } from 'client/components/misc/Icon';
+import Tooltip from 'client/components/misc/Tooltip';
+import { termText, type TermId } from '@/data/glossary';
 
 export interface RowProps {
   lbl?: string;
   val?: string | number | boolean;
   status?: Status;
+  reason?: string;
+  term?: TermId;
   yes?: string;
   no?: string;
   title?: string;
@@ -143,6 +147,15 @@ const valueText = ({ val, yes = 'Yes', no = 'No' }: RowProps): string => {
   return isDateLike(val) ? formatDate(val as string) : String(val ?? '');
 };
 
+// Why a row got its status, then what its term means, for the tooltip on its icon
+const hint = ({ reason, term }: RowProps, status: Status) =>
+  (reason || term) && (
+    <>
+      {reason && <b>{reason}</b>}
+      {term && termText(term, status === 'pass')}
+    </>
+  );
+
 // A value's text, as a link when given one, then its status icon
 const Value = (props: RowProps) => {
   const { val, link } = props;
@@ -157,7 +170,11 @@ const Value = (props: RowProps) => {
       ) : (
         <span>{text}</span>
       )}
-      {status && <StatusIcon status={status} />}
+      {status && (
+        <Tooltip content={hint(props, status)}>
+          <StatusIcon status={status} />
+        </Tooltip>
+      )}
     </>
   );
 };

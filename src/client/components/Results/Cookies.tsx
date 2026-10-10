@@ -1,6 +1,6 @@
 import { Card } from 'client/components/Form/Card';
 import Row, { ExpandableRow } from 'client/components/Form/Row';
-import { worstStatus } from 'client/components/misc/Icon';
+import { fromFindings } from 'client/components/misc/Icon';
 import type { Cookie } from 'client/utils/result-processor';
 import { checkCookie } from 'client/analysis/rules/cookies';
 
@@ -24,13 +24,10 @@ export const parseHeaderCookies = (cookiesHeader: string[]): Cookie[] => {
   return cookies;
 };
 
-// A cookie's status from the security flags it's missing, listed on hover
+// A cookie's status, from the security flags it's missing
 const cookieStatus = ({ name, attributes }: Cookie) => {
-  const findings = checkCookie(
-    name,
-    Object.keys(attributes).map((key) => key.toLowerCase()),
-  );
-  return { status: worstStatus(findings), title: findings.map((f) => f.title).join('\n') };
+  const flags = Object.keys(attributes).map((key) => key.toLowerCase());
+  return fromFindings(checkCookie(name, flags));
 };
 
 const CookiesCard = (props: { data: any; title: string; actionButtons: any }): JSX.Element => {
@@ -49,6 +46,7 @@ const CookiesCard = (props: { data: any; title: string; actionButtons: any }): J
             key={`header-cookie-${index}-${cookie.name}`}
             lbl={cookie.name || '(unnamed)'}
             val={cookie.value}
+            term="cookie-security"
             {...cookieStatus(cookie)}
             rowList={attributes}
           />

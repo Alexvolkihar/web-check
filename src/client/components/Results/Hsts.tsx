@@ -8,7 +8,7 @@ const HstsCard = (props: { data: any; title: string; actionButtons: any }): JSX.
   const days = Math.round(maxAge / 86400);
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
-      <Row lbl="HSTS Enabled?" val={!!hstsHeader} />
+      <Row lbl="HSTS Enabled?" val={!!hstsHeader} term="strict-transport-security" />
       {hstsHeader && (
         <>
           <Row
@@ -16,13 +16,15 @@ const HstsCard = (props: { data: any; title: string; actionButtons: any }): JSX.
             val={`${days} day${days === 1 ? '' : 's'}`}
             status={maxAge >= MIN_MAX_AGE ? 'pass' : 'warning'}
             title={`${maxAge} seconds`}
+            term="hsts-max-age"
           />
           <Row
             lbl="includeSubDomains"
             val={includeSubDomains}
             status={includeSubDomains ? 'pass' : 'warning'}
+            term="hsts-include-subdomains"
           />
-          <Row lbl="preload" val={preload} status={preload ? 'pass' : 'info'} />
+          <Row lbl="preload" val={preload} status={preload ? 'pass' : 'info'} term="hsts-preload" />
         </>
       )}
       {message && <p>{message}</p>}

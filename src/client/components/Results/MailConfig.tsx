@@ -17,8 +17,8 @@ import {
 
 // Whether a record exists, or Invalid when it exists but fails, with the check's status
 const checkRow = (found: boolean, check: Result): RowProps => {
-  const { status, title } = fromFinding(check);
-  return { val: found && status === 'error' ? 'Invalid' : found, status, title };
+  const { status, reason } = fromFinding(check);
+  return { val: found && status === 'error' ? 'Invalid' : found, status, reason };
 };
 
 // An optional record as Yes, or Not set up with any status its absence gets
@@ -52,21 +52,26 @@ const MailConfigCard = (props: { data: any; title: string; actionButtons: any })
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
       <Section title="Mail Security Checklist">
-        <Row lbl="SPF" {...checkRow(hasRecord('v=spf1'), checkSpf(mailServer))} />
-        <Row lbl="DKIM" {...dkimStatus(mailServer)} />
+        <Row lbl="SPF" term="spf" {...checkRow(hasRecord('v=spf1'), checkSpf(mailServer))} />
+        <Row lbl="DKIM" term="dkim" {...dkimStatus(mailServer)} />
         <Row
           lbl="DMARC"
+          term="dmarc"
           {...checkRow(
             hasRecord('v=DMARC1'),
             checkSubdomainDmarc(mailServer) || checkDmarc(mailServer),
           )}
         />
-        <Row lbl="BIMI" {...optional(hasRecord('v=BIMI1'))} />
+        <Row lbl="BIMI" term="bimi" {...optional(hasRecord('v=BIMI1'))} />
         {mxHosts(mailServer).length > 0 && (
           <>
-            <Row lbl="MTA-STS" {...mtaStsStatus(mailServer)} />
-            <Row lbl="TLS-RPT" {...optional(hasRecord('v=TLSRPTv1'), checkTlsRpt(mailServer))} />
-            <Row lbl="DANE" {...optional(mailServer.dane?.length > 0)} />
+            <Row lbl="MTA-STS" term="mta-sts" {...mtaStsStatus(mailServer)} />
+            <Row
+              lbl="TLS-RPT"
+              term="tls-rpt"
+              {...optional(hasRecord('v=TLSRPTv1'), checkTlsRpt(mailServer))}
+            />
+            <Row lbl="DANE" term="dane" {...optional(mailServer.dane?.length > 0)} />
           </>
         )}
       </Section>

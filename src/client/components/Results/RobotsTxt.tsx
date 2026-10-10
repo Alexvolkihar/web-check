@@ -29,6 +29,7 @@ const RobotsTxtCard = (props: {
           <Row
             lbl="Google Search"
             val={googleBlocked ? 'Blocked' : 'Allowed'}
+            term="search-crawling"
             {...fromFinding(googleBlocked)}
           />
           <ExpandableRow

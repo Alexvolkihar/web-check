@@ -9,6 +9,7 @@ const FirewallCard = (props: { data: any; title: string; actionButtons: any }): 
         lbl="Firewall"
         val={data.hasWaf ? 'Yes' : 'No*'}
         status={data.hasWaf ? 'pass' : 'warning'}
+        term="waf"
       />
       {data.waf && <Row lbl="WAF" val={data.waf} />}
       {!data.hasWaf && (

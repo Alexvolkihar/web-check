@@ -21,6 +21,7 @@ const ServerStatusCard = (props: { data: any; title: string; actionButtons: any 
         <Row
           lbl="Response Time"
           val={`${Math.round(serverStatus.responseTime)}ms`}
+          term="response-time"
           {...fromFinding(checkResponseTime(serverStatus.responseTime))}
         />
       )}

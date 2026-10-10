@@ -63,6 +63,7 @@ const TlsClientCompatCard = (props: {
             yes="Connects"
             no="Fails"
             status={ok ? 'pass' : 'warning'}
+            term="client-compatibility"
             rowList={ok ? successFields(sim) : failureFields(sim)}
           />
         );

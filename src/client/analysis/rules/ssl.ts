@@ -2,7 +2,7 @@ import type { Analyzer, Result } from '../types';
 import { daysUntil } from '../helpers';
 
 // Plain reasons for the validation errors sites most often get
-const REASONS: Record<string, string> = {
+export const REASONS: Record<string, string> = {
   UNABLE_TO_VERIFY_LEAF_SIGNATURE: "Server doesn't send its intermediate certificate",
   UNABLE_TO_GET_ISSUER_CERT_LOCALLY: "Server doesn't send its intermediate certificate",
   DEPTH_ZERO_SELF_SIGNED_CERT: 'Self-signed, not issued by a trusted authority',

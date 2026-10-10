@@ -26,7 +26,7 @@ const CaaRecordsCard = (props: { data: any; title: string; actionButtons: any })
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
       <Row lbl="Domain" val={domain} />
-      <Row lbl="CAA Records" val={records.length || 'None'} {...fromFinding(finding)} />
+      <Row lbl="CAA Records" val={records.length || 'None'} term="caa" {...fromFinding(finding)} />
       {groupByTag(records).map(([tag, values]) => (
         <ListRow key={tag} title={titles[tag] || tag} list={values} />
       ))}

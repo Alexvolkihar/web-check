@@ -31,22 +31,22 @@ const verification = (profile: any): RowProps => {
     return {
       val: 'Unknown',
       status: 'info',
-      title: 'The network could not be reached, so this account was not checked',
+      reason: 'The network could not be reached, so this account was not checked',
     };
   }
   if (!profile.exists) {
-    return { val: false, title: 'This handle does not resolve to a live account' };
+    return { val: false, reason: 'This handle does not resolve to a live account' };
   }
   if (profile.domainVerified) {
     return {
       val: true,
-      title: 'The handle is this domain, so the network has verified control of it',
+      reason: 'The handle is this domain, so the network has verified control of it',
     };
   }
   if (profile.linksBack) {
     return {
       val: true,
-      title: profile.websiteVerified
+      reason: profile.websiteVerified
         ? 'The profile links back to this site, and the network has verified the link'
         : 'The profile links back to this site',
     };
@@ -54,7 +54,7 @@ const verification = (profile: any): RowProps => {
   return {
     val: false,
     status: 'warning',
-    title: profile.website
+    reason: profile.website
       ? `The profile links to ${profile.website} instead`
       : 'The profile lists no website to check against',
   };
@@ -100,7 +100,7 @@ const SocialPresenceCard = (props: {
           )}
           {profile.followers !== undefined && <Row lbl="Followers" val={num(profile.followers)} />}
           {profile.website && !profile.linksBack && <Row lbl="Website" val={profile.website} />}
-          <Row lbl="Verification" {...verification(profile)} />
+          <Row lbl="Verification" term="social-verification" {...verification(profile)} />
         </Section>
       ))}
     </Card>

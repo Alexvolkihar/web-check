@@ -1,5 +1,6 @@
 import { Card } from 'client/components/Form/Card';
 import Row, { ExpandableRow, Section, type RowProps } from 'client/components/Form/Row';
+import type { TermId } from '@/data/glossary';
 
 const KEY_FLAGS: Record<number, string> = {
   256: 'Zone Signing Key (ZSK)',
@@ -73,11 +74,11 @@ const RECORD_TYPES: Record<number, string> = {
   63: 'ZONEMD',
 };
 
-// The row for each record, where RRSIG means the resolver validated the signed answer
-const PRESENT: Record<string, string> = {
-  DNSKEY: 'DNSKEY - Present?',
-  DS: 'DS - Present?',
-  RRSIG: 'RRSIG - Validated?',
+// Each record's row label and glossary term, where RRSIG means the resolver validated the answer
+const PRESENT: Record<string, [string, TermId]> = {
+  DNSKEY: ['DNSKEY - Present?', 'dnskey'],
+  DS: ['DS - Present?', 'ds-record'],
+  RRSIG: ['RRSIG - Validated?', 'dnssec-validation'],
 };
 
 const RESPONSE_FLAGS = [
@@ -135,13 +136,13 @@ const DnsSecCard = (props: { data: any; title: string; actionButtons: any }): JS
   const dnsSec = props.data;
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
-      {Object.entries(PRESENT).map(([key, label]) => {
+      {Object.entries(PRESENT).map(([key, [label, term]]) => {
         const record = dnsSec[key];
         return (
           <Section key={key} title={key}>
             {record.isFound && record.answer && (
               <>
-                <Row lbl={label} val={true} />
+                <Row lbl={label} val={true} term={term} />
                 {record.answer.map((answer: any, index: number) => {
                   const parsed: any =
                     answer.type === 48
@@ -164,6 +165,7 @@ const DnsSecCard = (props: { data: any; title: string; actionButtons: any }): JS
             {!(record.isFound && record.answer) && record.response && (
               <ExpandableRow
                 lbl={label}
+                term={term}
                 val={!!record.isFound}
                 status={record.isFound ? 'pass' : 'warning'}
                 rowList={makeResponseList(record.response)}

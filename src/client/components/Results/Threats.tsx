@@ -22,10 +22,22 @@ const MalwareCard = (props: { data: any; title: string; actionButtons: any }): J
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
       {!safeBrowsing.error && (
-        <Row lbl="Google Safe Browsing" val={!safeBrowsing.unsafe} yes="Safe" no="Unsafe" />
+        <Row
+          lbl="Google Safe Browsing"
+          val={!safeBrowsing.unsafe}
+          yes="Safe"
+          no="Unsafe"
+          term="safe-browsing"
+        />
       )}
       {typeof cloudmersive.CleanResult === 'boolean' && (
-        <Row lbl="Cloudmersive" val={cloudmersive.CleanResult} yes="Safe" no="Unsafe" />
+        <Row
+          lbl="Cloudmersive"
+          val={cloudmersive.CleanResult}
+          yes="Safe"
+          no="Unsafe"
+          term="threat-scan"
+        />
       )}
       {(!cloudmersive.error || safeBrowsing.details) && (
         <Row
@@ -39,6 +51,7 @@ const MalwareCard = (props: { data: any; title: string; actionButtons: any }): J
           val={!phished}
           yes="No Phishing Found"
           no="Phishing Identified"
+          term="phishing"
         />
       )}
       {phishTank.url0?.valid === 'true' && phishTank.url0.phish_detail_page && (
@@ -49,11 +62,11 @@ const MalwareCard = (props: { data: any; title: string; actionButtons: any }): J
         />
       )}
       {urlHaus.query_status === 'no_results' && (
-        <Row lbl="Malware Status" val="No Malware Found" status="pass" />
+        <Row lbl="Malware Status" val="No Malware Found" status="pass" term="malware" />
       )}
       {urlHaus.query_status === 'ok' && (
         <>
-          <Row lbl="Status" val="Malware Identified" status="error" />
+          <Row lbl="Status" val="Malware Identified" status="error" term="malware" />
           <Row lbl="First Seen" val={convertToDate(urlHaus.firstseen)} />
           <Row lbl="Bad URLs Count" val={urlHaus.url_count} />
         </>

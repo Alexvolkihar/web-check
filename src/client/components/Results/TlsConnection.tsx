@@ -2,13 +2,15 @@ import { Card } from 'client/components/Form/Card';
 import Row, { Section } from 'client/components/Form/Row';
 import { toStatus, type Status } from 'client/components/misc/Icon';
 import { protocolSeverity } from 'client/analysis/rules/tls-connection';
+import { REASONS } from 'client/analysis/rules/ssl';
+import type { TermId } from '@/data/glossary';
 
 // Each TLS version, with its status when enabled and when disabled
-const VERSIONS: [string, string, Status?, Status?][] = [
-  ['TLSv1.3', 'TLS 1.3', 'pass', 'info'],
-  ['TLSv1.2', 'TLS 1.2'],
-  ['TLSv1.1', 'TLS 1.1', 'error', 'pass'],
-  ['TLSv1', 'TLS 1.0', 'error', 'pass'],
+const VERSIONS: { id: string; label: string; on?: Status; off?: Status; term?: TermId }[] = [
+  { id: 'TLSv1.3', label: 'TLS 1.3', on: 'pass', off: 'info', term: 'tls-1-3' },
+  { id: 'TLSv1.2', label: 'TLS 1.2' },
+  { id: 'TLSv1.1', label: 'TLS 1.1', on: 'error', off: 'pass', term: 'legacy-tls' },
+  { id: 'TLSv1', label: 'TLS 1.0', on: 'error', off: 'pass', term: 'legacy-tls' },
 ];
 
 const formatEphemeralKey = (k: any): string => {
@@ -31,7 +33,12 @@ const TlsConnectionCard = (props: {
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
       {d.protocol && (
-        <Row lbl="Protocol" val={d.protocol} status={severity && toStatus(severity)} />
+        <Row
+          lbl="Protocol"
+          val={d.protocol}
+          status={severity && toStatus(severity)}
+          term="tls-version"
+        />
       )}
       {cipherName && <Row lbl="Cipher Suite" val={cipherName} />}
       {d.cipher?.version && <Row lbl="Cipher Version" val={d.cipher.version} />}
@@ -41,40 +48,46 @@ const TlsConnectionCard = (props: {
           lbl="ALPN"
           val={d.alpnProtocol}
           status={d.alpnProtocol === 'h2' ? 'pass' : undefined}
+          term="http2"
         />
       )}
       <Row
         lbl="Forward Secrecy"
         val={!!d.forwardSecrecy}
         status={d.forwardSecrecy ? 'pass' : 'warning'}
+        term="forward-secrecy"
       />
       <Row
         lbl="Session Resumption"
         val={!!d.sessionResumption}
         status={d.sessionResumption ? 'pass' : 'info'}
+        term="session-resumption"
       />
       <Row
         lbl="OCSP Stapling"
         val={d.ocspStapled ? 'Present' : 'Not Present'}
         status={d.ocspStapled ? 'pass' : 'info'}
-        title={d.ocspStapled ? undefined : 'May impact visitor privacy'}
+        term="ocsp-stapling"
       />
       <Row
         lbl="Certificate Trust"
         val={!!d.authorized}
         yes="Trusted"
         no={d.authError || 'Untrusted'}
+        reason={REASONS[d.authError]}
+        term="certificate-trust"
       />
       {d.versions && (
         <Section title="TLS Versions">
-          {VERSIONS.map(([id, label, enabled, disabled]) => {
-            const on = d.versions.includes(id);
+          {VERSIONS.map((version) => {
+            const enabled = d.versions.includes(version.id);
             return (
               <Row
-                key={id}
-                lbl={label}
-                val={on ? 'Enabled' : 'Disabled'}
-                status={on ? enabled : disabled}
+                key={version.id}
+                lbl={version.label}
+                val={enabled ? 'Enabled' : 'Disabled'}
+                status={enabled ? version.on : version.off}
+                term={version.term}
               />
             );
           })}

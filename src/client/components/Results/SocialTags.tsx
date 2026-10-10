@@ -40,6 +40,7 @@ const SocialTagsCard = (props: { data: any; title: string; actionButtons: any })
           lbl={label}
           val={tags[key] || 'Missing'}
           status={tags[key] ? 'pass' : 'warning'}
+          term={key === 'twitterCard' ? 'twitter-card' : 'open-graph'}
         />
       ))}
       {tags.themeColor && (

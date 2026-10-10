@@ -12,6 +12,7 @@ const BlockListsCard = (props: { data: any; title: string; actionButtons: any })
           val={!blocklist.isBlocked}
           yes="Not Blocked"
           no="Blocked"
+          term="dns-blocklist"
           key={`blocklist-${blockIndex}-${blocklist.serverIp}`}
         />
       ))}

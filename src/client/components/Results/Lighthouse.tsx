@@ -2,6 +2,7 @@ import { Card } from 'client/components/Form/Card';
 import { ExpandableRow, type RowProps } from 'client/components/Form/Row';
 import { toStatus } from 'client/components/misc/Icon';
 import { scoreSeverity } from 'client/analysis/rules/quality';
+import type { TermId } from '@/data/glossary';
 
 interface Audit {
   id: string;
@@ -10,6 +11,14 @@ interface Audit {
   description?: string;
   displayValue?: string;
 }
+
+// The glossary term for each Lighthouse category
+const TERMS: Record<string, TermId> = {
+  performance: 'lighthouse-performance',
+  accessibility: 'lighthouse-accessibility',
+  'best-practices': 'lighthouse-best-practices',
+  seo: 'lighthouse-seo',
+};
 
 // Lighthouse's words for its green, orange and red scores
 const SCORE_TEXT = { pass: 'Pass', warning: 'Average', error: 'Fail' };
@@ -47,6 +56,7 @@ const LighthouseCard = (props: { data: any; title: string; actionButtons: any })
           <ExpandableRow
             key={`lighthouse-${index}`}
             lbl={categories[key].title || key}
+            term={TERMS[key]}
             {...categoryValue(categories[key].score)}
             rowList={scoreList}
           />

@@ -64,12 +64,17 @@ export const StatusIcon = ({ status }: { status: Status }) => {
 export const toStatus = (severity: Severity): Status =>
   severity === 'critical' || severity === 'issue' ? 'error' : severity;
 
-// The status of the most severe finding, or pass when there are none
-export const worstStatus = (findings: Result[]): Status =>
-  toStatus(SEVERITIES.find((severity) => findings.some((f) => f.severity === severity)) || 'pass');
+// The worst status among findings, pass when there are none, with their problems as the reason
+export const fromFindings = (findings: Result[]): { status: Status; reason?: string } => ({
+  status: toStatus(SEVERITIES.find((s) => findings.some((f) => f.severity === s)) || 'pass'),
+  reason: findings
+    .filter((f) => f.severity !== 'pass')
+    .map((f) => f.title)
+    .join('\n'),
+});
 
-// A finding's status and title, for the icon and hover text on its row
-export const fromFinding = (finding?: Result | null): { status?: Status; title?: string } =>
-  finding ? { status: toStatus(finding.severity), title: finding.title } : {};
+// A finding's status, and its title as the reason shown in the icon's tooltip
+export const fromFinding = (finding?: Result | null): { status?: Status; reason?: string } =>
+  finding ? { status: toStatus(finding.severity), reason: finding.title } : {};
 
 export default Icon;

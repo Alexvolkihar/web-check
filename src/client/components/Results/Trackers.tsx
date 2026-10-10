@@ -2,6 +2,14 @@ import { Card } from 'client/components/Form/Card';
 import Row, { ExpandableRow, ListRow, Section } from 'client/components/Form/Row';
 import { toStatus } from 'client/components/misc/Icon';
 import { FLAGGED } from 'client/analysis/rules/trackers';
+import type { TermId } from '@/data/glossary';
+
+// The glossary term for each tracker category that gets a status
+const TERMS: Record<string, TermId> = {
+  Advertising: 'ad-trackers',
+  'Adult Advertising': 'ad-trackers',
+  'Site Analytics': 'analytics',
+};
 
 const regions = new Intl.DisplayNames(['en'], { type: 'region' });
 
@@ -23,7 +31,7 @@ const TrackersCard = (props: { data: any; title: string; actionButtons: any }): 
     <Card heading={props.title} actionButtons={props.actionButtons}>
       <Row lbl="Requests Made" val={requests} />
       {companies > 0 && <Row lbl="Companies" val={companies} />}
-      {!found && <Row lbl="Third Parties" val="None" status="pass" />}
+      {!found && <Row lbl="Third Parties" val="None" status="pass" term="trackers" />}
       {categories.map((category) => (
         <Section key={category} title={category}>
           {trackers
@@ -34,6 +42,7 @@ const TrackersCard = (props: { data: any; title: string; actionButtons: any }): 
                 lbl={tracker.name}
                 val={tracker.company}
                 status={FLAGGED[category] && toStatus(FLAGGED[category])}
+                term={TERMS[category]}
                 rowList={details(tracker)}
               />
             ))}

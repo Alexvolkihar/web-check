@@ -49,7 +49,8 @@ const OpenPortsCard = (props: { data: any; title: string; actionButtons: any }):
             lbl={String(port)}
             val={SERVICES[port] || 'Unknown'}
             status={severity && toStatus(severity)}
-            title={risk}
+            reason={risk}
+            term="open-port"
           />
         );
       })}

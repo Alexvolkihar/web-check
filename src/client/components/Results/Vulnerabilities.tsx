@@ -28,8 +28,10 @@ const VulnerabilitiesCard = (props: {
   const [finding] = checkVulns(props.data);
   return (
     <Card heading={props.title} actionButtons={props.actionButtons} styles={cardStyles}>
-      <Row lbl="Known CVEs" val={vulns.length || 'None'} {...fromFinding(finding)} />
-      {exploited > 0 && <Row lbl="Actively exploited" val={exploited} status="error" />}
+      <Row lbl="Known CVEs" val={vulns.length || 'None'} term="cve" {...fromFinding(finding)} />
+      {exploited > 0 && (
+        <Row lbl="Actively exploited" val={exploited} status="error" term="known-exploited" />
+      )}
       <div className="cves">
         {vulns.map((v) => (
           <Row key={v.id}>
