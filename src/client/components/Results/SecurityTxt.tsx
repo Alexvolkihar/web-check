@@ -1,9 +1,13 @@
 import { Card, Note } from 'client/components/Form/Card';
 import Row, { Section } from 'client/components/Form/Row';
+import { fromFinding } from 'client/components/misc/Icon';
 import { getPath } from 'client/utils/result-processor';
+import { checkContact, checkExpires, getField } from 'client/analysis/rules/security-txt';
 
 const SecurityTxtCard = (props: { data: any; title: string; actionButtons: any }): JSX.Element => {
   const { isPresent, foundIn, isPgpSigned, fields = {}, content } = props.data;
+  const contact = checkContact(fields);
+  const expires = checkExpires(fields);
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
       <Row lbl="Present" val={!!isPresent} status={isPresent ? 'pass' : 'warning'} />
@@ -11,6 +15,10 @@ const SecurityTxtCard = (props: { data: any; title: string; actionButtons: any }
         <>
           <Row lbl="File Location" val={foundIn} />
           <Row lbl="PGP Signed" val={!!isPgpSigned} status={isPgpSigned ? 'pass' : 'info'} />
+          {contact && <Row lbl="Contact" val="Missing" {...fromFinding(contact)} />}
+          {!getField(fields, 'expires') && (
+            <Row lbl="Expires" val="Missing" {...fromFinding(expires)} />
+          )}
           {Object.entries(fields).map(([field, value]: [string, any]) => {
             const isLink = value.includes('http');
             return (
@@ -19,6 +27,7 @@ const SecurityTxtCard = (props: { data: any; title: string; actionButtons: any }
                 lbl={field}
                 val={isLink ? getPath(value) : value}
                 link={isLink ? value : undefined}
+                {...fromFinding(field.toLowerCase() === 'expires' ? expires : null)}
               />
             );
           })}

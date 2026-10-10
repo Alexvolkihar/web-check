@@ -1,5 +1,7 @@
 import { Card } from 'client/components/Form/Card';
 import Row from 'client/components/Form/Row';
+import { fromFinding } from 'client/components/misc/Icon';
+import { checkResponseTime } from 'client/analysis/rules/status';
 
 const STEPS = [
   ['dns', 'DNS Lookup'],
@@ -16,7 +18,11 @@ const ServerStatusCard = (props: { data: any; title: string; actionButtons: any 
       <Row lbl="Is Up?" val={serverStatus.isUp} yes="Online" no="Offline" />
       <Row lbl="Status Code" val={serverStatus.responseCode} />
       {serverStatus.responseTime && (
-        <Row lbl="Response Time" val={`${Math.round(serverStatus.responseTime)}ms`} />
+        <Row
+          lbl="Response Time"
+          val={`${Math.round(serverStatus.responseTime)}ms`}
+          {...fromFinding(checkResponseTime(serverStatus.responseTime))}
+        />
       )}
       {STEPS.map(
         ([key, label]) =>

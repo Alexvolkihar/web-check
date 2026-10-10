@@ -1,13 +1,8 @@
 import { Card } from 'client/components/Form/Card';
 import Row, { type RowProps } from 'client/components/Form/Row';
-import type { Status } from 'client/components/misc/Icon';
-
-// Booleans are direct, ints follow SSL Labs scheme: 1 = safe, 2/3 = vulnerable
-const isVulnerable = (v: any): boolean => {
-  if (typeof v === 'boolean') return v;
-  if (typeof v === 'number') return v === 2 || v === 3;
-  return false;
-};
+import { toStatus, type Status } from 'client/components/misc/Icon';
+import { gradeSeverity } from 'client/analysis/rules/tls-security-audit';
+import { MIN_MAX_AGE } from 'client/analysis/rules/hsts';
 
 const yesNo = (v: any, no: Status = 'error'): RowProps => ({
   val: !!v,
@@ -24,12 +19,24 @@ const fwdSecrecy = (n: number): RowProps => {
   return { val: false };
 };
 
-const hsts = (policy?: any): RowProps => {
-  if (policy?.status !== 'present') return { val: 'Not set', status: 'error' };
+// SSL Labs HSTS statuses that leave the site without a working policy
+const HSTS_PROBLEMS: Record<string, string> = {
+  absent: 'Not set',
+  invalid: 'Invalid',
+  disabled: 'Disabled',
+};
+
+// The HSTS policy SSL Labs found, held to the same one year max-age as the HSTS card
+const hsts = (policy?: any): RowProps | null => {
+  if (policy?.status !== 'present') {
+    const problem = HSTS_PROBLEMS[policy?.status];
+    return problem ? { val: problem, status: 'error' } : null;
+  }
   const days = Math.round((policy.maxAge || 0) / 86400);
   const sub = policy.includeSubDomains ? ' + includeSubDomains' : '';
-  if (days >= 365) return { val: `${days} days${sub}`, status: 'pass' };
-  return { val: `${days} days${sub} (recommend >= 365)`, status: 'warning' };
+  const val = `${days} day${days === 1 ? '' : 's'}${sub}`;
+  if (policy.maxAge >= MIN_MAX_AGE) return { val, status: 'pass' };
+  return { val, status: 'warning', title: 'Under the one year the HSTS preload list needs' };
 };
 
 // renegSupport bits: 1 insecure client-init, 2 secure, 4 secure client-init, 8 required
@@ -61,17 +68,18 @@ const POSTURE: Array<[string, (d: any) => RowProps | null]> = [
   ['Renegotiation', (d) => reneg(d.renegSupport)],
   ['Fallback SCSV (downgrade protection)', (d) => yesNo(d.fallbackScsv, 'warning')],
   ['Certificate Transparency', (d) => yesNo(d.hasSct)],
-  ['HTTP -> HTTPS Forwarding', (d) => (d.httpForwarding == null ? null : yesNo(d.httpForwarding))],
+  ['Redirects To', (d) => (d.httpForwarding ? { val: d.httpForwarding } : null)],
   ['ChaCha20 Preferred', (d) => yesNo(d.chaCha20Preference, 'info')],
   ['AEAD Cipher Support', (d) => yesNo(d.supportsAead)],
   ['Legacy CBC Cipher Support', (d) => risk(d.supportsCBC)],
   ['TLS Compression', (d) => compression(d.compressionMethods)],
   ['Static DH Key Reuse', (d) => risk(d.dhYsReuse)],
-  ['Weak DH Primes', (d) => risk(d.dhUsesKnownPrimes)],
+  ['Weak DH Primes', (d) => risk(d.dhUsesKnownPrimes === 2)],
   ['Static ECDH Parameter Reuse', (d) => risk(d.ecdhParameterReuse)],
 ];
 
-const VULNS: Array<[string, string]> = [
+// Each vulnerability test, with any SSL Labs results that are neither safe nor vulnerable
+const VULNS: Array<[string, string, Record<number, string>?]> = [
   ['heartbleed', 'Heartbleed'],
   ['poodle', 'POODLE (SSLv3)'],
   ['poodleTls', 'POODLE (TLS)'],
@@ -84,9 +92,18 @@ const VULNS: Array<[string, string]> = [
   ['drownVulnerable', 'DROWN'],
   ['openSslCcs', 'OpenSSL CCS Injection'],
   ['openSSLLuckyMinus20', 'OpenSSL Padding Oracle'],
-  ['bleichenbacher', 'ROBOT (Bleichenbacher)'],
-  ['ticketbleed', 'Ticketbleed'],
+  ['bleichenbacher', 'ROBOT (Bleichenbacher)', { 4: 'Inconsistent results' }],
+  ['ticketbleed', 'Ticketbleed', { 3: 'Similar bug found' }],
 ];
+
+// A test result, where SSL Labs numbers mean 1 safe, below 1 untested, and above 1 vulnerable
+const vulnerability = (result: unknown, others: Record<number, string> = {}): RowProps | null => {
+  if (result == null) return null;
+  if (typeof result === 'boolean') return { val: !result, yes: 'Safe', no: 'Vulnerable' };
+  if (typeof result !== 'number' || result < 1) return { val: 'Not tested' };
+  if (others[result]) return { val: others[result], status: 'warning' };
+  return { val: result === 1, yes: 'Safe', no: 'Vulnerable' };
+};
 
 const TlsSecurityAuditCard = (props: {
   data: any;
@@ -99,7 +116,7 @@ const TlsSecurityAuditCard = (props: {
   const protocols = (d.protocols || []).map((p: any) => `${p.name} ${p.version}`).join(', ');
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
-      {ep.grade && <Row lbl="Grade" val={ep.grade} />}
+      {ep.grade && <Row lbl="Grade" val={ep.grade} status={toStatus(gradeSeverity(ep.grade))} />}
       {ep.gradeTrustIgnored && ep.gradeTrustIgnored !== ep.grade && (
         <Row lbl="Grade (trust ignored)" val={ep.gradeTrustIgnored} />
       )}
@@ -108,9 +125,10 @@ const TlsSecurityAuditCard = (props: {
         const row = getter(d);
         return row && <Row key={label} lbl={label} {...row} />;
       })}
-      {VULNS.map(([key, label]) => (
-        <Row key={key} lbl={label} val={!isVulnerable(d[key])} yes="Safe" no="Vulnerable" />
-      ))}
+      {VULNS.map(([key, label, others]) => {
+        const row = vulnerability(d[key], others);
+        return row && <Row key={key} lbl={label} {...row} />;
+      })}
     </Card>
   );
 };

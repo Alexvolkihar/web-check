@@ -1,5 +1,7 @@
 import { Card, Note } from 'client/components/Form/Card';
 import Row, { ListRow } from 'client/components/Form/Row';
+import { fromFinding } from 'client/components/misc/Icon';
+import caaRecords from 'client/analysis/rules/caa-records';
 
 const titles: Record<string, string> = {
   issue: 'Allowed CAs',
@@ -20,17 +22,16 @@ const groupByTag = (records: any[]) => {
 
 const CaaRecordsCard = (props: { data: any; title: string; actionButtons: any }): JSX.Element => {
   const { domain, records = [] } = props.data;
+  const [finding] = caaRecords(props.data);
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
       <Row lbl="Domain" val={domain} />
+      <Row lbl="CAA Records" val={records.length || 'None'} {...fromFinding(finding)} />
       {groupByTag(records).map(([tag, values]) => (
         <ListRow key={tag} title={titles[tag] || tag} list={values} />
       ))}
       {!records.length && (
-        <>
-          <Row lbl="CAA Records" val="None" status="warning" />
-          <Note>Without CAA records, any certificate authority can issue for this domain</Note>
-        </>
+        <Note>Without CAA records, any certificate authority can issue for this domain</Note>
       )}
     </Card>
   );

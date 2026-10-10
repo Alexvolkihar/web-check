@@ -1,5 +1,7 @@
 import { Card } from 'client/components/Form/Card';
 import Row, { ExpandableRow, ListRow, Section } from 'client/components/Form/Row';
+import { toStatus } from 'client/components/misc/Icon';
+import { FLAGGED } from 'client/analysis/rules/trackers';
 
 const regions = new Intl.DisplayNames(['en'], { type: 'region' });
 
@@ -31,6 +33,7 @@ const TrackersCard = (props: { data: any; title: string; actionButtons: any }): 
                 key={tracker.name}
                 lbl={tracker.name}
                 val={tracker.company}
+                status={FLAGGED[category] && toStatus(FLAGGED[category])}
                 rowList={details(tracker)}
               />
             ))}

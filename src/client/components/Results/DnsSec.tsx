@@ -73,6 +73,13 @@ const RECORD_TYPES: Record<number, string> = {
   63: 'ZONEMD',
 };
 
+// The row for each record, where RRSIG means the resolver validated the signed answer
+const PRESENT: Record<string, string> = {
+  DNSKEY: 'DNSKEY - Present?',
+  DS: 'DS - Present?',
+  RRSIG: 'RRSIG - Validated?',
+};
+
 const RESPONSE_FLAGS = [
   ['RD', 'Recursion Desired'],
   ['RA', 'Recursion Available'],
@@ -128,13 +135,13 @@ const DnsSecCard = (props: { data: any; title: string; actionButtons: any }): JS
   const dnsSec = props.data;
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
-      {['DNSKEY', 'DS', 'RRSIG'].map((key: string) => {
+      {Object.entries(PRESENT).map(([key, label]) => {
         const record = dnsSec[key];
         return (
           <Section key={key} title={key}>
             {record.isFound && record.answer && (
               <>
-                <Row lbl={`${key} - Present?`} val={true} />
+                <Row lbl={label} val={true} />
                 {record.answer.map((answer: any, index: number) => {
                   const parsed: any =
                     answer.type === 48
@@ -156,7 +163,7 @@ const DnsSecCard = (props: { data: any; title: string; actionButtons: any }): JS
             )}
             {!(record.isFound && record.answer) && record.response && (
               <ExpandableRow
-                lbl={`${key} - Present?`}
+                lbl={label}
                 val={!!record.isFound}
                 status={record.isFound ? 'pass' : 'warning'}
                 rowList={makeResponseList(record.response)}

@@ -60,6 +60,9 @@ const TlsClientCompatCard = (props: {
             key={`tls-cli-${i}`}
             lbl={buildTitle(sim.client || {})}
             val={ok}
+            yes="Connects"
+            no="Fails"
+            status={ok ? 'pass' : 'warning'}
             rowList={ok ? successFields(sim) : failureFields(sim)}
           />
         );

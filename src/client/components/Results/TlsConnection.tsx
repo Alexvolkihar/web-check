@@ -1,6 +1,7 @@
 import { Card } from 'client/components/Form/Card';
 import Row, { Section } from 'client/components/Form/Row';
-import type { Status } from 'client/components/misc/Icon';
+import { toStatus, type Status } from 'client/components/misc/Icon';
+import { protocolSeverity } from 'client/analysis/rules/tls-connection';
 
 // Each TLS version, with its status when enabled and when disabled
 const VERSIONS: [string, string, Status?, Status?][] = [
@@ -26,13 +27,22 @@ const TlsConnectionCard = (props: {
   const d = props.data || {};
   const cipherName = d.cipher?.standardName || d.cipher?.name || '';
   const ephemeral = formatEphemeralKey(d.ephemeralKey);
+  const severity = protocolSeverity(d.protocol || '');
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
-      {d.protocol && <Row lbl="Protocol" val={d.protocol} />}
+      {d.protocol && (
+        <Row lbl="Protocol" val={d.protocol} status={severity && toStatus(severity)} />
+      )}
       {cipherName && <Row lbl="Cipher Suite" val={cipherName} />}
       {d.cipher?.version && <Row lbl="Cipher Version" val={d.cipher.version} />}
       {ephemeral && <Row lbl="Ephemeral Key" val={ephemeral} />}
-      {d.alpnProtocol && <Row lbl="ALPN" val={d.alpnProtocol} />}
+      {d.alpnProtocol && (
+        <Row
+          lbl="ALPN"
+          val={d.alpnProtocol}
+          status={d.alpnProtocol === 'h2' ? 'pass' : undefined}
+        />
+      )}
       <Row
         lbl="Forward Secrecy"
         val={!!d.forwardSecrecy}

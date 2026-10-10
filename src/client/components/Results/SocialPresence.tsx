@@ -30,7 +30,7 @@ const verification = (profile: any): RowProps => {
   if (profile.checked === false) {
     return {
       val: 'Unknown',
-      status: 'warning',
+      status: 'info',
       title: 'The network could not be reached, so this account was not checked',
     };
   }

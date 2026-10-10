@@ -1,7 +1,9 @@
 import colors from 'client/styles/colors';
 import { Card } from 'client/components/Form/Card';
 import Row from 'client/components/Form/Row';
+import { fromFinding } from 'client/components/misc/Icon';
 import type { Vuln } from 'client/utils/result-processor';
+import checkVulns from 'client/analysis/rules/vulnerabilities';
 
 const cardStyles = `
   .cves {
@@ -23,13 +25,10 @@ const VulnerabilitiesCard = (props: {
 }): JSX.Element => {
   const vulns: Vuln[] = props.data.vulns || [];
   const exploited = vulns.filter((v) => v.kev).length;
+  const [finding] = checkVulns(props.data);
   return (
     <Card heading={props.title} actionButtons={props.actionButtons} styles={cardStyles}>
-      <Row
-        lbl="Known CVEs"
-        val={vulns.length || 'None'}
-        status={vulns.length ? 'warning' : 'pass'}
-      />
+      <Row lbl="Known CVEs" val={vulns.length || 'None'} {...fromFinding(finding)} />
       {exploited > 0 && <Row lbl="Actively exploited" val={exploited} status="error" />}
       <div className="cves">
         {vulns.map((v) => (

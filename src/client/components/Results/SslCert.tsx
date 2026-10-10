@@ -1,5 +1,7 @@
 import { Card } from 'client/components/Form/Card';
 import Row, { ExpandableRow, ListRow } from 'client/components/Form/Row';
+import { fromFinding } from 'client/components/misc/Icon';
+import { checkExpiry } from 'client/analysis/rules/ssl';
 
 function getExtendedKeyUsage(oids: string[]) {
   const oidMap: { [key: string]: string } = {
@@ -54,7 +56,7 @@ const SslCertCard = (props: { data: any; title: string; actionButtons: any }): J
         <Row lbl="Trusted" val={sslCert.isValid} no={`No (${sslCert.authError})`} />
       )}
       {key && <Row lbl="Public Key" val={key} />}
-      {valid_to && <Row lbl="Expires" val={valid_to} />}
+      {valid_to && <Row lbl="Expires" val={valid_to} {...fromFinding(checkExpiry(valid_to))} />}
       {valid_from && <Row lbl="Renewed" val={valid_from} />}
       {days > 0 && <Row lbl="Lifetime" val={`${days} days`} />}
       {serialNumber && <Row lbl="Serial Num" val={serialNumber} />}

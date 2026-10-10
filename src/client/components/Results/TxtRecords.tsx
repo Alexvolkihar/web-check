@@ -3,7 +3,7 @@ import Row from 'client/components/Form/Row';
 
 const cardStyles = `
 grid-column: span 2;
-span.val { max-width: 32rem !important; }
+span.val { max-width: 65% !important; }
 span { overflow: hidden; }
 `;
 

@@ -32,23 +32,30 @@ export const StyledRow = styled.div`
       color: ${colors.primary};
     }
   }
+  /* Labels keep a third of the row, so long values can't squash them */
   span.lbl {
     font-weight: bold;
     flex: 1;
+    min-width: calc(35% - 0.5rem);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   span.val {
-    max-width: 16rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.4em;
+    min-width: 0;
+    max-width: min(16rem, 65%);
+    > span,
+    > a {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     a {
       color: ${colors.primary};
-    }
-    svg {
-      margin-right: 0.4em;
     }
   }
 `;
@@ -136,21 +143,21 @@ const valueText = ({ val, yes = 'Yes', no = 'No' }: RowProps): string => {
   return isDateLike(val) ? formatDate(val as string) : String(val ?? '');
 };
 
-// A value's status icon and text, as a link when given one
+// A value's text, as a link when given one, then its status icon
 const Value = (props: RowProps) => {
   const { val, link } = props;
   const status = props.status || (typeof val === 'boolean' ? (val ? 'pass' : 'error') : undefined);
   const text = valueText(props);
   return (
     <>
-      {status && <StatusIcon status={status} />}
       {link ? (
         <a href={link} target="_blank" rel="noreferrer">
           {text}
         </a>
       ) : (
-        text
+        <span>{text}</span>
       )}
+      {status && <StatusIcon status={status} />}
     </>
   );
 };
@@ -193,7 +200,7 @@ export const ExpandableRow = (props: RowProps & { rowList?: RowProps[]; open?: b
   return (
     <Details open={open}>
       <StyledRow as="summary">
-        <span className="lbl" title={title}>
+        <span className="lbl" title={title || lbl}>
           {lbl}
         </span>
         {val != null && (
@@ -229,7 +236,7 @@ const Row = (props: RowProps) => {
   return (
     <StyledRow>
       {lbl && (
-        <span className="lbl" title={title}>
+        <span className="lbl" title={title || lbl}>
           {lbl}
         </span>
       )}

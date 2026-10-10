@@ -1,6 +1,6 @@
 import { Card, Note } from 'client/components/Form/Card';
 import Row, { ExpandableRow } from 'client/components/Form/Row';
-import { toStatus } from 'client/components/misc/Icon';
+import { fromFinding } from 'client/components/misc/Icon';
 import checkBreaches from 'client/analysis/rules/breaches';
 
 const BreachesCard = (props: { data: any; title: string; actionButtons: any }): JSX.Element => {
@@ -9,7 +9,7 @@ const BreachesCard = (props: { data: any; title: string; actionButtons: any }): 
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
       <Row lbl="Domain" val={domain} />
-      <Row lbl="Breaches" val={breaches.length || 'None'} status={toStatus(result.severity)} />
+      <Row lbl="Breaches" val={breaches.length || 'None'} {...fromFinding(result)} />
       {breaches.map((breach: any) => (
         <ExpandableRow
           key={breach.name}

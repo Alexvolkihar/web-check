@@ -1,23 +1,30 @@
 import { Card } from 'client/components/Form/Card';
-import Row, { type RowProps } from 'client/components/Form/Row';
-
-// Split an HSTS header into its directives, showing flags like preload as Yes
-const parseHeader = (header: string): RowProps[] =>
-  header
-    .split(';')
-    .filter((part) => part.trim())
-    .map((part) => {
-      const [name, ...value] = part.split('=');
-      return { lbl: name.trim(), val: value.length ? value.join('=').trim() : true };
-    });
+import Row from 'client/components/Form/Row';
+import { MIN_MAX_AGE, parseHsts } from 'client/analysis/rules/hsts';
 
 const HstsCard = (props: { data: any; title: string; actionButtons: any }): JSX.Element => {
   const { hstsHeader, message } = props.data;
+  const { maxAge, includeSubDomains, preload } = parseHsts(hstsHeader || '');
+  const days = Math.round(maxAge / 86400);
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
       <Row lbl="HSTS Enabled?" val={!!hstsHeader} />
-      {hstsHeader &&
-        parseHeader(hstsHeader).map((directive) => <Row key={directive.lbl} {...directive} />)}
+      {hstsHeader && (
+        <>
+          <Row
+            lbl="max-age"
+            val={`${days} day${days === 1 ? '' : 's'}`}
+            status={maxAge >= MIN_MAX_AGE ? 'pass' : 'warning'}
+            title={`${maxAge} seconds`}
+          />
+          <Row
+            lbl="includeSubDomains"
+            val={includeSubDomains}
+            status={includeSubDomains ? 'pass' : 'warning'}
+          />
+          <Row lbl="preload" val={preload} status={preload ? 'pass' : 'info'} />
+        </>
+      )}
       {message && <p>{message}</p>}
     </Card>
   );

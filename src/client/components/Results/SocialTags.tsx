@@ -1,6 +1,7 @@
 import { Card } from 'client/components/Form/Card';
 import Row from 'client/components/Form/Row';
 import colors from 'client/styles/colors';
+import { REQUIRED } from 'client/analysis/rules/social-tags';
 
 const cardStyles = `
   .banner-image img {
@@ -33,6 +34,14 @@ const SocialTagsCard = (props: { data: any; title: string; actionButtons: any })
       {tags.description && <Row lbl="Description" val={tags.description} />}
       {tags.keywords && <Row lbl="Keywords" val={tags.keywords} />}
       {tags.canonicalUrl && <Row lbl="Canonical URL" val={tags.canonicalUrl} />}
+      {REQUIRED.map(([key, label]) => (
+        <Row
+          key={key}
+          lbl={label}
+          val={tags[key] || 'Missing'}
+          status={tags[key] ? 'pass' : 'warning'}
+        />
+      ))}
       {tags.themeColor && (
         <Row>
           <span className="lbl">Theme Color</span>

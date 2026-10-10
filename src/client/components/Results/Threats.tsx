@@ -24,6 +24,9 @@ const MalwareCard = (props: { data: any; title: string; actionButtons: any }): J
       {!safeBrowsing.error && (
         <Row lbl="Google Safe Browsing" val={!safeBrowsing.unsafe} yes="Safe" no="Unsafe" />
       )}
+      {typeof cloudmersive.CleanResult === 'boolean' && (
+        <Row lbl="Cloudmersive" val={cloudmersive.CleanResult} yes="Safe" no="Unsafe" />
+      )}
       {(!cloudmersive.error || safeBrowsing.details) && (
         <Row
           lbl="Threat Type"
