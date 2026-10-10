@@ -1,37 +1,24 @@
 import { Card } from 'client/components/Form/Card';
 import Row, { type RowProps } from 'client/components/Form/Row';
 
-const cardStyles = '';
-
-const parseHeader = (headerString: string): RowProps[] => {
-  return headerString.split(';').map((part) => {
-    const trimmedPart = part.trim();
-    const equalsIndex = trimmedPart.indexOf('=');
-
-    if (equalsIndex >= 0) {
-      return {
-        lbl: trimmedPart.substring(0, equalsIndex).trim(),
-        val: trimmedPart.substring(equalsIndex + 1).trim(),
-      };
-    } else {
-      return { lbl: trimmedPart, val: 'true' };
-    }
-  });
-};
+// Split an HSTS header into its directives, showing flags like preload as Yes
+const parseHeader = (header: string): RowProps[] =>
+  header
+    .split(';')
+    .filter((part) => part.trim())
+    .map((part) => {
+      const [name, ...value] = part.split('=');
+      return { lbl: name.trim(), val: value.length ? value.join('=').trim() : true };
+    });
 
 const HstsCard = (props: { data: any; title: string; actionButtons: any }): JSX.Element => {
-  const hstsResults = props.data;
-  const hstsHeaders = hstsResults?.hstsHeader ? parseHeader(hstsResults.hstsHeader) : [];
+  const { hstsHeader, message } = props.data;
   return (
-    <Card heading={props.title} actionButtons={props.actionButtons} styles={cardStyles}>
-      {typeof hstsResults.compatible === 'boolean' && (
-        <Row lbl="HSTS Enabled?" val={hstsResults.compatible ? '✅ Yes' : '❌ No'} />
-      )}
-      {hstsHeaders.length > 0 &&
-        hstsHeaders.map((header: RowProps, index: number) => {
-          return <Row lbl={header.lbl} val={header.val} key={`hsts-${index}`} />;
-        })}
-      {hstsResults.message && <p>{hstsResults.message}</p>}
+    <Card heading={props.title} actionButtons={props.actionButtons}>
+      <Row lbl="HSTS Enabled?" val={!!hstsHeader} />
+      {hstsHeader &&
+        parseHeader(hstsHeader).map((directive) => <Row key={directive.lbl} {...directive} />)}
+      {message && <p>{message}</p>}
     </Card>
   );
 };

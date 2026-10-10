@@ -1,16 +1,13 @@
 import { Card } from 'client/components/Form/Card';
-import Row from 'client/components/Form/Row';
-import Heading from 'client/components/Form/Heading';
-import colors from 'client/styles/colors';
+import Row, { Section } from 'client/components/Form/Row';
+import type { Status } from 'client/components/misc/Icon';
 
-const yesNo = (v: boolean) => (v ? '✅ Yes' : '❌ No');
-
-// Each TLS version, with how to show it enabled and disabled
-const VERSIONS = [
-  ['TLSv1.3', 'TLS 1.3', '✅ Enabled', 'Disabled'],
-  ['TLSv1.2', 'TLS 1.2', 'Enabled', 'Disabled'],
-  ['TLSv1.1', 'TLS 1.1', '❌ Enabled', '✅ Disabled'],
-  ['TLSv1', 'TLS 1.0', '❌ Enabled', '✅ Disabled'],
+// Each TLS version, with its status when enabled and when disabled
+const VERSIONS: [string, string, Status?, Status?][] = [
+  ['TLSv1.3', 'TLS 1.3', 'pass', 'info'],
+  ['TLSv1.2', 'TLS 1.2'],
+  ['TLSv1.1', 'TLS 1.1', 'error', 'pass'],
+  ['TLSv1', 'TLS 1.0', 'error', 'pass'],
 ];
 
 const formatEphemeralKey = (k: any): string => {
@@ -36,27 +33,42 @@ const TlsConnectionCard = (props: {
       {d.cipher?.version && <Row lbl="Cipher Version" val={d.cipher.version} />}
       {ephemeral && <Row lbl="Ephemeral Key" val={ephemeral} />}
       {d.alpnProtocol && <Row lbl="ALPN" val={d.alpnProtocol} />}
-      <Row lbl="Forward Secrecy" val={yesNo(!!d.forwardSecrecy)} />
-      <Row lbl="Session Resumption" val={yesNo(!!d.sessionResumption)} />
-      <Row lbl="OCSP Stapling" val="">
-        <span className="lbl">OCSP Stapling</span>
-        <span className="val" style={{ color: colors.info }}>
-          {d.ocspStapled ? 'ⓘ Present' : 'ⓘ Not Present (may impact visitor privacy)'}
-        </span>
-      </Row>
+      <Row
+        lbl="Forward Secrecy"
+        val={!!d.forwardSecrecy}
+        status={d.forwardSecrecy ? 'pass' : 'warning'}
+      />
+      <Row
+        lbl="Session Resumption"
+        val={!!d.sessionResumption}
+        status={d.sessionResumption ? 'pass' : 'info'}
+      />
+      <Row
+        lbl="OCSP Stapling"
+        val={d.ocspStapled ? 'Present' : 'Not Present'}
+        status={d.ocspStapled ? 'pass' : 'info'}
+        title={d.ocspStapled ? undefined : 'May impact visitor privacy'}
+      />
       <Row
         lbl="Certificate Trust"
-        val={d.authorized ? '✅ Trusted' : `❌ ${d.authError || 'Untrusted'}`}
+        val={!!d.authorized}
+        yes="Trusted"
+        no={d.authError || 'Untrusted'}
       />
       {d.versions && (
-        <>
-          <Heading as="h3" color={colors.primary} size="small">
-            TLS Versions
-          </Heading>
-          {VERSIONS.map(([id, label, enabled, disabled]) => (
-            <Row key={id} lbl={label} val={d.versions.includes(id) ? enabled : disabled} />
-          ))}
-        </>
+        <Section title="TLS Versions">
+          {VERSIONS.map(([id, label, enabled, disabled]) => {
+            const on = d.versions.includes(id);
+            return (
+              <Row
+                key={id}
+                lbl={label}
+                val={on ? 'Enabled' : 'Disabled'}
+                status={on ? enabled : disabled}
+              />
+            );
+          })}
+        </Section>
       )}
     </Card>
   );

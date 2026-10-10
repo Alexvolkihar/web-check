@@ -1,8 +1,5 @@
-import { Fragment } from 'react';
-import colors from 'client/styles/colors';
 import { Card } from 'client/components/Form/Card';
-import Heading from 'client/components/Form/Heading';
-import Row, { ExpandableRow, ListRow } from 'client/components/Form/Row';
+import Row, { ExpandableRow, ListRow, Section } from 'client/components/Form/Row';
 
 const regions = new Intl.DisplayNames(['en'], { type: 'region' });
 
@@ -22,14 +19,11 @@ const TrackersCard = (props: { data: any; title: string; actionButtons: any }): 
   const found = trackers.length + otherTrackers.length + unknown.length;
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
-      <Row lbl="Requests Made" val={String(requests)} />
-      {companies > 0 && <Row lbl="Companies" val={String(companies)} />}
-      {!found && <Row lbl="Third Parties" val="✅ None" />}
+      <Row lbl="Requests Made" val={requests} />
+      {companies > 0 && <Row lbl="Companies" val={companies} />}
+      {!found && <Row lbl="Third Parties" val="None" status="pass" />}
       {categories.map((category) => (
-        <Fragment key={category}>
-          <Heading as="h4" size="small" align="left" color={colors.primary}>
-            {category}
-          </Heading>
+        <Section key={category} title={category}>
           {trackers
             .filter((t: any) => t.category === category)
             .map((tracker: any) => (
@@ -40,7 +34,7 @@ const TrackersCard = (props: { data: any; title: string; actionButtons: any }): 
                 rowList={details(tracker)}
               />
             ))}
-        </Fragment>
+        </Section>
       ))}
       {otherTrackers.length > 0 && <ListRow title="Other Trackers" list={otherTrackers} />}
       {unknown.length > 0 && <ListRow title="Unrecognised" list={unknown} />}

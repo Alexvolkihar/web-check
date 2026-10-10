@@ -34,7 +34,7 @@ const SocialTagsCard = (props: { data: any; title: string; actionButtons: any })
       {tags.keywords && <Row lbl="Keywords" val={tags.keywords} />}
       {tags.canonicalUrl && <Row lbl="Canonical URL" val={tags.canonicalUrl} />}
       {tags.themeColor && (
-        <Row lbl="" val="">
+        <Row>
           <span className="lbl">Theme Color</span>
           <span className="val color-field" style={{ background: tags.themeColor }}>
             {tags.themeColor}
@@ -42,18 +42,11 @@ const SocialTagsCard = (props: { data: any; title: string; actionButtons: any })
         </Row>
       )}
       {tags.twitterSite && (
-        <Row lbl="" val="">
-          <span className="lbl">X Profile</span>
-          <span className="val">
-            {tags.xHandle ? (
-              <a target="_blank" rel="noreferrer" href={`https://x.com/${tags.xHandle}`}>
-                @{tags.xHandle}
-              </a>
-            ) : (
-              tags.twitterSite
-            )}
-          </span>
-        </Row>
+        <Row
+          lbl="X Profile"
+          val={tags.xHandle ? `@${tags.xHandle}` : tags.twitterSite}
+          link={tags.xHandle && `https://x.com/${tags.xHandle}`}
+        />
       )}
       {tags.author && <Row lbl="Author" val={tags.author} />}
       {tags.publisher && <Row lbl="Publisher" val={tags.publisher} />}

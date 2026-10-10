@@ -44,13 +44,12 @@ const CookiesCard = (props: { data: any; title: string; actionButtons: any }): J
       })}
       {clientCookies.map((cookie: any, index: number) => {
         const nameValPairs = Object.keys(cookie).map((key: string) => {
-          return { lbl: key, val: cookie[key] };
+          return { lbl: key, val: String(cookie[key]) };
         });
         return (
           <ExpandableRow
             key={`client-cookie-${index}-${cookie.name}`}
             lbl={cookie.name}
-            val=""
             rowList={nameValPairs}
           />
         );

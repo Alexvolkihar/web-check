@@ -1,13 +1,5 @@
-import { Card } from 'client/components/Form/Card';
+import { Card, Note } from 'client/components/Form/Card';
 import Row, { ListRow } from 'client/components/Form/Row';
-
-const cardStyles = `
-  small {
-    display: block;
-    margin-top: 0.75rem;
-    opacity: 0.5;
-  }
-`;
 
 const titles: Record<string, string> = {
   issue: 'Allowed CAs',
@@ -29,15 +21,15 @@ const groupByTag = (records: any[]) => {
 const CaaRecordsCard = (props: { data: any; title: string; actionButtons: any }): JSX.Element => {
   const { domain, records = [] } = props.data;
   return (
-    <Card heading={props.title} actionButtons={props.actionButtons} styles={cardStyles}>
+    <Card heading={props.title} actionButtons={props.actionButtons}>
       <Row lbl="Domain" val={domain} />
       {groupByTag(records).map(([tag, values]) => (
         <ListRow key={tag} title={titles[tag] || tag} list={values} />
       ))}
       {!records.length && (
         <>
-          <Row lbl="CAA Records" val="❌ None" />
-          <small>Without CAA records, any certificate authority can issue for this domain</small>
+          <Row lbl="CAA Records" val="None" status="warning" />
+          <Note>Without CAA records, any certificate authority can issue for this domain</Note>
         </>
       )}
     </Card>

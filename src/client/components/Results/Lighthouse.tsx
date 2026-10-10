@@ -1,5 +1,5 @@
 import { Card } from 'client/components/Form/Card';
-import { ExpandableRow } from 'client/components/Form/Row';
+import { ExpandableRow, type RowProps } from 'client/components/Form/Row';
 
 const processScore = (percentile: number) => {
   return `${Math.round(percentile * 100)}%`;
@@ -14,11 +14,13 @@ interface Audit {
   displayValue?: string;
 }
 
-const makeValue = (audit: Audit) => {
-  if (audit.displayValue) return audit.displayValue;
-  if (audit.score == null) return 'N/A';
-  if (audit.scoreDisplayMode === 'binary') return audit.score === 1 ? '✅ Pass' : '❌ Fail';
-  return audit.score;
+const makeValue = (audit: Audit): RowProps => {
+  if (audit.displayValue) return { val: audit.displayValue };
+  if (audit.score == null) return { val: 'N/A' };
+  if (audit.scoreDisplayMode === 'binary') {
+    return { val: audit.score === 1, yes: 'Pass', no: 'Fail' };
+  }
+  return { val: audit.score };
 };
 
 const LighthouseCard = (props: { data: any; title: string; actionButtons: any }): JSX.Element => {
@@ -33,9 +35,8 @@ const LighthouseCard = (props: { data: any; title: string; actionButtons: any })
         const scoreList = scoreIds.map((id: string) => {
           return {
             lbl: audits[id].title,
-            val: makeValue(audits[id]),
             title: audits[id].description,
-            key: id,
+            ...makeValue(audits[id]),
           };
         });
         return (

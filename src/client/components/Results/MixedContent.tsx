@@ -1,11 +1,12 @@
 import { Card } from 'client/components/Form/Card';
-import Row, { ListRow } from 'client/components/Form/Row';
+import Row, { ListRow, type RowProps } from 'client/components/Form/Row';
 
 // Sum up the mixed content, noting when the page's CSP upgrades it to https
-const mixedSummary = (https: boolean, count: number, upgraded: boolean) => {
-  if (!https) return 'N/A, page is HTTP';
-  if (!count) return '✅ None';
-  return upgraded ? `⚠️ ${count} upgraded by CSP` : `❌ ${count} found`;
+const mixedSummary = (https: boolean, count: number, upgraded: boolean): RowProps => {
+  if (!https) return { val: 'N/A, page is HTTP' };
+  if (!count) return { val: 'None', status: 'pass' };
+  if (upgraded) return { val: `${count} upgraded by CSP`, status: 'warning' };
+  return { val: `${count} found`, status: 'error' };
 };
 
 const MixedContentCard = (props: { data: any; title: string; actionButtons: any }): JSX.Element => {
@@ -26,13 +27,13 @@ const MixedContentCard = (props: { data: any; title: string; actionButtons: any 
   return (
     <Card heading={props.title} actionButtons={props.actionButtons}>
       <Row lbl="Page" val={url} />
-      <Row lbl="Mixed Content" val={mixedSummary(https, mixed, upgradeInsecureRequests)} />
+      <Row lbl="Mixed Content" {...mixedSummary(https, mixed, upgradeInsecureRequests)} />
       {https && (upgradeInsecureRequests || mixed > 0) && (
         <Row lbl="Upgrade Insecure Requests" val={upgradeInsecureRequests} />
       )}
-      <Row lbl="Third-Party Scripts in HTML" val={String(thirdPartyScripts)} />
+      <Row lbl="Third-Party Scripts in HTML" val={thirdPartyScripts} />
       {thirdPartyScripts > 0 && <Row lbl="Using SRI" val={`${hashed} of ${thirdPartyScripts}`} />}
-      {integrityPolicy && <Row lbl="Integrity-Policy" val="✅ Enforced" />}
+      {integrityPolicy && <Row lbl="Integrity-Policy" val="Enforced" status="pass" />}
       {lists.map(
         ([title, list]) => list.length > 0 && <ListRow key={title} title={title} list={list} />,
       )}

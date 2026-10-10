@@ -1,25 +1,18 @@
-import { Card } from 'client/components/Form/Card';
+import { Card, Note } from 'client/components/Form/Card';
 import Row from 'client/components/Form/Row';
-
-const cardStyles = `
-  small { margin-top: 1rem; opacity: 0.5; }
-`;
 
 const OpenPortsCard = (props: { data: any; title: string; actionButtons: any }): JSX.Element => {
   const portData = props.data;
   return (
-    <Card heading={props.title} actionButtons={props.actionButtons} styles={cardStyles}>
+    <Card heading={props.title} actionButtons={props.actionButtons}>
       {portData.openPorts.map((port: any) => (
-        <Row key={port} lbl="" val="">
-          <span>{port}</span>
-        </Row>
+        <Row key={port}>{port}</Row>
       ))}
-      <br />
-      <small>
+      <Note>
         Unable to establish connections to:
         <br />
         {portData.failedPorts.join(', ')}
-      </small>
+      </Note>
     </Card>
   );
 };

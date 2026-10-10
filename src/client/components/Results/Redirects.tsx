@@ -26,14 +26,14 @@ const RedirectsCard = (props: { data: any; title: string; actionButtons: any }):
   const count = Math.max(chain.length - 1, 0);
   return (
     <Card heading={props.title} actionButtons={props.actionButtons} styles={cardStyles}>
-      {!count && <Row lbl="" val="No redirects" />}
+      {!count && <Row>No redirects</Row>}
       {count > 0 && (
         <>
           <p className="redirect-count">
             Followed {count} redirect{count === 1 ? '' : 's'} when contacting host
           </p>
           {chain.slice(1).map((redirect: any, index: number) => (
-            <Row lbl="" val="" key={index}>
+            <Row key={index}>
               <span className="arrow-thing">↳</span> {redirect}
             </Row>
           ))}
