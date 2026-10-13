@@ -1,20 +1,24 @@
 ---
 import PageLayout from '@layouts/Page.astro';
+import PillLinks from '@components/molecules/PillLinks.astro';
+import TermList from '@components/molecules/TermList.astro';
 import { termGroups } from '@/data/glossary';
-import { checks } from '@/data/checks';
 
-const count = termGroups.reduce((total, group) => total + Object.keys(group.terms).length, 0);
 const page = new URL(Astro.url.pathname, Astro.site).href;
 
 const description =
-  `Plain-English definitions of ${count} website security and quality terms, ` +
-  'from HSTS and DMARC to Heartbleed, each linked to the check that tests it.';
+  'Quick reference for website security and OSINT terms, like HSTS, DMARC and DNSSEC.';
+
+const groups = termGroups.map((group) => ({
+  ...group,
+  id: `group-${group.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+}));
 
 // Every term as a schema.org DefinedTerm, linked to its anchor on this page
 const schema = {
   '@context': 'https://schema.org',
   '@type': 'DefinedTermSet',
-  name: 'Web Check Glossary',
+  name: 'Web Security Glossary',
   url: page,
   hasDefinedTerm: termGroups.flatMap((group) =>
     Object.entries(group.terms).map(([id, term]) => ({
@@ -41,31 +45,20 @@ const schema = {
   <section class="intro">
     <h1>Web security glossary</h1>
     <p class="tagline">Quick reference for the terms used for website security and OSINT.</p>
+    <nav aria-label="Glossary sections">
+      <PillLinks links={groups.map((group) => ({ label: group.title, href: `#${group.id}` }))} />
+    </nav>
   </section>
 
-  {termGroups.map((group) => (
+  {groups.map((group) => (
     <section>
-      <h2>{group.title}</h2>
-      <dl>
-        {Object.entries(group.terms).map(([id, term]) => (
-          <div id={id}>
-            <dt>{term.title}</dt>
-            <dd>
-              {term.definition}
-              {term.check && (
-                <a href={`/${term.check}`}>Test it with the {checks[term.check].title} check</a>
-              )}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      <h2 id={group.id}>{group.title}</h2>
+      <TermList terms={Object.entries(group.terms)} />
     </section>
   ))}
 </PageLayout>
 
 <style lang="scss">
-  @use '@styles/media-queries.scss' as *;
-
   .intro {
     display: flex;
     flex-direction: column;
@@ -89,49 +82,7 @@ const schema = {
     }
   }
 
-  dl {
-    margin: 0;
-
-    > div {
-      display: grid;
-      grid-template-columns: 16rem 1fr;
-      align-items: baseline;
-      gap: 0.25rem 2rem;
-      padding: 0.75rem 0;
-      border-top: 1px solid var(--primary-transparent);
-      scroll-margin-top: 2rem;
-
-      @include mobile-down {
-        grid-template-columns: 1fr;
-      }
-
-      &:target dt {
-        color: var(--primary);
-      }
-    }
-  }
-
-  dt {
-    font-weight: 600;
-  }
-
-  dd {
-    margin: 0;
-    max-width: 75ch;
-    line-height: 1.5;
-    color: var(--text-color-secondary);
-
-    a {
-      display: block;
-      width: fit-content;
-      margin-top: 0.25rem;
-      font-size: 0.85rem;
-      color: var(--text-color-thirdly);
-
-      &:hover,
-      &:focus-visible {
-        color: var(--primary);
-      }
-    }
+  h2 {
+    scroll-margin-top: 2rem;
   }
 </style>

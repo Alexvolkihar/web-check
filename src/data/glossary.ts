@@ -10,6 +10,12 @@ export interface Term {
 }
 
 const certificates = {
+  'certificate-authority': {
+    title: 'Certificate Authority (CA)',
+    check: 'ssl',
+    definition:
+      "An organisation such as Let's Encrypt that browsers trust to issue certificates. It checks who controls a domain before issuing one.",
+  },
   'certificate-trust': {
     title: 'Certificate Trust',
     check: 'ssl',
@@ -24,6 +30,18 @@ const certificates = {
     definition:
       'Certificates are only valid until their expiry date, after which browsers refuse them.',
     fail: 'Renew it soon, or visitors will see a security warning instead of the site.',
+  },
+  'subject-alternative-names': {
+    title: 'Subject Alternative Names (SANs)',
+    check: 'ssl',
+    definition:
+      "The hostnames a certificate covers. Browsers show a warning if the site's name isn't one of them.",
+  },
+  'certificate-fingerprint': {
+    title: 'Certificate Fingerprint',
+    check: 'ssl',
+    definition:
+      "A hash of the whole certificate. If two fingerprints match, it's the same certificate.",
   },
   'certificate-transparency': {
     title: 'Certificate Transparency',
@@ -41,6 +59,30 @@ const certificates = {
 } satisfies Record<string, Term>;
 
 const tls = {
+  https: {
+    title: 'HTTPS',
+    check: 'tls-connection',
+    definition:
+      "The secure version of HTTP. It sends pages over an encrypted connection, so others on the network can't read or change them.",
+  },
+  tls: {
+    title: 'TLS and SSL',
+    check: 'tls-connection',
+    definition:
+      'The encryption behind HTTPS. SSL was the version before it, retired years ago, but the name lives on in "SSL certificate".',
+  },
+  handshake: {
+    title: 'TLS Handshake',
+    check: 'tls-connection',
+    definition:
+      'The first few messages of a secure connection, where the browser and server agree on settings, swap keys and check the certificate.',
+  },
+  'cipher-suite': {
+    title: 'Cipher Suite',
+    check: 'tls-connection',
+    definition:
+      'The mix of algorithms used to encrypt and protect a connection, agreed during the handshake. Older suites have known weaknesses.',
+  },
   'tls-version': {
     title: 'TLS Version',
     check: 'tls-connection',
@@ -93,6 +135,12 @@ const tls = {
     title: 'HTTP/2',
     check: 'tls-connection',
     definition: 'A faster version of HTTP that loads many files at once over a single connection.',
+  },
+  alpn: {
+    title: 'ALPN',
+    check: 'tls-connection',
+    definition:
+      'Lets the browser and server pick a protocol, such as HTTP/2, inside the TLS handshake, which saves a round trip.',
   },
   renegotiation: {
     title: 'Renegotiation',
@@ -154,6 +202,18 @@ const tls = {
 } satisfies Record<string, Term>;
 
 const tlsVulnerabilities = {
+  'downgrade-attack': {
+    title: 'Downgrade Attack',
+    check: 'tls-security-audit',
+    definition:
+      "Tricking a connection into using an older, weaker protocol or cipher, so it's easier to break.",
+  },
+  'padding-oracle': {
+    title: 'Padding Oracle',
+    check: 'tls-security-audit',
+    definition:
+      'A flaw where a server responds differently to badly padded data. By sending thousands of altered messages, attackers can use those replies to decrypt traffic.',
+  },
   heartbleed: {
     title: 'Heartbleed',
     check: 'tls-security-audit',
@@ -268,6 +328,18 @@ const hsts = {
 } satisfies Record<string, Term>;
 
 const securityHeaders = {
+  xss: {
+    title: 'Cross-Site Scripting (XSS)',
+    check: 'http-security',
+    definition:
+      "Getting a script to run on someone else's site, where it can steal visitors' sessions or act as them.",
+  },
+  clickjacking: {
+    title: 'Clickjacking',
+    check: 'http-security',
+    definition:
+      'Loading a site in a hidden frame on another page, so visitors click its buttons without realising.',
+  },
   'content-security-policy': {
     title: 'Content-Security-Policy',
     check: 'http-security',
@@ -348,6 +420,12 @@ const pageContent = {
     definition:
       'A CSP setting that makes browsers fetch any HTTP links on the page over HTTPS instead.',
   },
+  'third-party-scripts': {
+    title: 'Third-Party Scripts',
+    check: 'mixed-content',
+    definition:
+      "Scripts loaded from another company's server, like analytics or chat widgets. They have full access to the page, so whoever controls that server controls part of the site.",
+  },
   sri: {
     title: 'Subresource Integrity (SRI)',
     check: 'mixed-content',
@@ -415,7 +493,99 @@ const email = {
   },
 } satisfies Record<string, Term>;
 
+const domains = {
+  whois: {
+    title: 'WHOIS',
+    check: 'whois-lookup',
+    definition:
+      "The public record of a domain's registration: its registrar, key dates, nameservers and, unless hidden, the owner's contact details.",
+  },
+  'whois-privacy': {
+    title: 'WHOIS Privacy',
+    check: 'domain-info',
+    definition:
+      "Hides a domain owner's name and contact details from WHOIS, showing the registrar's or a proxy's details instead.",
+  },
+  registrar: {
+    title: 'Registrar',
+    check: 'whois-lookup',
+    definition:
+      'The company a domain is registered through, like Namecheap or GoDaddy. Anyone who gets into that account can take control of the domain.',
+  },
+  registry: {
+    title: 'Registry',
+    check: 'whois-lookup',
+    definition:
+      'The organisation that runs a whole top-level domain, like Verisign for .com, and keeps the master list of who holds each name.',
+  },
+  'domain-expiry': {
+    title: 'Domain Expiry',
+    check: 'whois-lookup',
+    definition:
+      "The date a domain's registration runs out. If it isn't renewed, the site and its email stop working, and the name can end up with someone else.",
+  },
+  subdomain: {
+    title: 'Subdomain',
+    check: 'subdomains',
+    definition:
+      'A name under the main domain, like mail.example.com. Forgotten ones are often left running old, unpatched software.',
+  },
+} satisfies Record<string, Term>;
+
 const dns = {
+  'dns-resolver': {
+    title: 'DNS Resolver',
+    check: 'block-lists',
+    definition:
+      "The server that finds the IP address for a domain when you visit a site. It's usually run by your ISP, or a public service like 1.1.1.1.",
+  },
+  'a-record': {
+    title: 'A and AAAA Records',
+    check: 'dns',
+    definition:
+      "Point a domain to its server's IP address. A records hold IPv4 addresses, and AAAA records hold IPv6 ones.",
+  },
+  cname: {
+    title: 'CNAME Record',
+    check: 'dns',
+    definition:
+      'Makes one domain name an alias for another, often to point a subdomain at a hosting service. If you cancel the service but leave the record, someone else may be able to take over the subdomain.',
+  },
+  'mx-record': {
+    title: 'MX Records',
+    check: 'dns',
+    definition: 'List the servers that receive email for the domain, in order of preference.',
+  },
+  'ns-record': {
+    title: 'NS Records',
+    check: 'dns-server',
+    definition:
+      "Name the servers that hold a domain's DNS records. Whoever controls them controls where the domain points.",
+  },
+  'txt-record': {
+    title: 'TXT Records',
+    check: 'txt-records',
+    definition:
+      'Free-text DNS records. Sites use them to prove they own a domain, and to publish email policies such as SPF and DMARC.',
+  },
+  'soa-record': {
+    title: 'SOA Record',
+    check: 'dns',
+    definition:
+      "Holds the basic settings for a domain's DNS, such as its main nameserver, an admin email address, and how often other nameservers check for changes.",
+  },
+  'ptr-record': {
+    title: 'PTR Record (Reverse DNS)',
+    check: 'dns',
+    definition:
+      'The reverse of an A record, mapping an IP address back to a hostname. Mail servers often reject email from servers without one.',
+  },
+  ttl: {
+    title: 'TTL (Time to Live)',
+    check: 'dns',
+    definition:
+      'How long, in seconds, resolvers may keep a DNS answer before asking again. Long TTLs make lookups faster, but changes take longer to reach everyone.',
+  },
   dnskey: {
     title: 'DNSKEY',
     check: 'dnssec',
@@ -435,6 +605,45 @@ const dns = {
     definition:
       "Whether a resolver could verify the domain's DNS answers were signed and unchanged.",
     fail: "Answers can't be verified, so a forged DNS reply could send visitors to the wrong server.",
+  },
+} satisfies Record<string, Term>;
+
+const hosting = {
+  'ip-address': {
+    title: 'IP Address',
+    check: 'get-ip',
+    definition:
+      "The number that identifies a server on the internet. DNS turns domain names into these, so people don't have to remember them.",
+  },
+  'shared-hosting': {
+    title: 'Shared Hosting',
+    check: 'hosts',
+    definition:
+      "Many sites running on one server and IP address. It's cheap and common, but if one site gets blocklisted, others on the same IP can be blocked too.",
+  },
+  asn: {
+    title: 'ASN (Autonomous System Number)',
+    check: 'server-info',
+    definition:
+      "A number for a large network on the internet, usually run by a hosting company, ISP or big business. A server's ASN shows whose network it sits on.",
+  },
+  'ip-geolocation': {
+    title: 'IP Geolocation',
+    check: 'location',
+    definition:
+      "An estimate of where a server is, based on its IP address. It's usually right about the country, but often wrong about the city.",
+  },
+  traceroute: {
+    title: 'Traceroute',
+    check: 'trace-route',
+    definition:
+      'Lists each network hop between you and a server, with the time each one takes. It shows where a connection slows down or breaks.',
+  },
+  cms: {
+    title: 'Content Management System (CMS)',
+    check: 'tech-stack',
+    definition:
+      'Software for building and editing a site without writing code, like WordPress, Drupal or Joomla. Old versions and plugins are a common way in for attackers.',
   },
 } satisfies Record<string, Term>;
 
@@ -561,6 +770,12 @@ const quality = {
     definition:
       'How long the server takes to answer. A slow first response delays everything else on the page.',
   },
+  'http-status-codes': {
+    title: 'HTTP Status Codes',
+    check: 'status',
+    definition:
+      'The three-digit number a server sends with every response: 200 means OK, 301 a redirect, 404 not found, and 500 a server error.',
+  },
   redirects: {
     title: 'Redirects',
     check: 'redirects',
@@ -579,6 +794,30 @@ const quality = {
     check: 'robots-txt',
     definition: 'robots.txt can ask search engines to stay away from some or all of a site.',
     fail: 'Google is asked to skip the whole site, so it may drop out of search results.',
+  },
+  'ai-crawlers': {
+    title: 'AI Crawlers',
+    check: 'robots-txt',
+    definition:
+      'Bots that fetch pages to train AI models or answer questions, like GPTBot and ClaudeBot. Sites can ask them to stay away in robots.txt, though not all listen.',
+  },
+  'llms-txt': {
+    title: 'llms.txt',
+    check: 'robots-txt',
+    definition:
+      'A proposed file at /llms.txt that gives AI tools a short, plain summary of a site and links to its key pages.',
+  },
+  'xml-sitemap': {
+    title: 'XML Sitemap',
+    check: 'sitemap',
+    definition:
+      'A file listing the pages of a site, so search engines can find them all, including ones nothing links to.',
+  },
+  'canonical-url': {
+    title: 'Canonical URL',
+    check: 'social-tags',
+    definition:
+      "Tells search engines which URL is the main one when a page can be reached at several addresses, so its ranking isn't split between them.",
   },
   'open-graph': {
     title: 'Open Graph',
@@ -614,6 +853,24 @@ const quality = {
     check: 'trackers',
     definition: 'Services that record how visitors use a site, such as the pages they view.',
   },
+  'carbon-footprint': {
+    title: 'Carbon Footprint',
+    check: 'carbon',
+    definition:
+      'An estimate of the CO2 released by the energy used to load a page. Heavier pages use more energy.',
+  },
+  'tranco-rank': {
+    title: 'Tranco Rank',
+    check: 'rank',
+    definition:
+      "A site's place in the Tranco list of the top million sites. It combines several other rankings, which makes it harder to game.",
+  },
+  'web-archive': {
+    title: 'Web Archive',
+    check: 'archives',
+    definition:
+      'Services like the Wayback Machine that save copies of web pages over time. They show how a site used to look, including things since taken down.',
+  },
 } satisfies Record<string, Term>;
 
 export const glossary = {
@@ -624,7 +881,9 @@ export const glossary = {
   ...securityHeaders,
   ...pageContent,
   ...email,
+  ...domains,
   ...dns,
+  ...hosting,
   ...threats,
   ...securityTxt,
   ...quality,
@@ -639,7 +898,9 @@ export const termGroups: { title: string; terms: Record<string, Term> }[] = [
   { title: 'Security headers', terms: securityHeaders },
   { title: 'Page content', terms: pageContent },
   { title: 'Email', terms: email },
+  { title: 'Domains', terms: domains },
   { title: 'DNS', terms: dns },
+  { title: 'Hosting and network', terms: hosting },
   { title: 'Threats and reputation', terms: threats },
   { title: 'security.txt', terms: securityTxt },
   { title: 'Quality and visibility', terms: quality },

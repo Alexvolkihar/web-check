@@ -2,6 +2,8 @@
 import PageLayout from '@layouts/Page.astro';
 import ScanForm from '@components/form/ScanForm.astro';
 import CheckList from '@components/category/CheckList.astro';
+import PillLinks from '@components/molecules/PillLinks.astro';
+import TermList from '@components/molecules/TermList.astro';
 import { checks, relatedChecks, type CheckId } from '@/data/checks';
 import { categories } from '@/data/categories';
 import { glossary } from '@/data/glossary';
@@ -24,7 +26,8 @@ const resources = info.resources.map((resource) =>
   typeof resource === 'string' ? { title: resource, link: resource } : resource,
 );
 
-const labels = info.categories.map((c) => categories[c].label);
+const tags = info.categories.map((c) => ({ label: categories[c].label, href: `/${c}` }));
+const labels = tags.map((tag) => tag.label);
 const keywords = [info.title, ...labels, 'website check'].join(', ').toLowerCase();
 
 const related = relatedChecks(check);
@@ -47,13 +50,7 @@ const terms = Object.entries(glossary).filter(([, term]) => term.check === check
     </p>
     <h1>{info.title}</h1>
     <p class="summary">{info.summary}</p>
-    <ul class="tags">
-      {info.categories.map((category) => (
-        <li>
-          <a href={`/${category}`}>{categories[category].label}</a>
-        </li>
-      ))}
-    </ul>
+    <PillLinks links={tags} />
     <ScanForm tool={scanCheck} label={scanLabel} />
   </section>
 
@@ -68,16 +65,7 @@ const terms = Object.entries(glossary).filter(([, term]) => term.check === check
     {terms.length > 0 && (
       <section class="terms">
         <h2>Key terms</h2>
-        <dl>
-          {terms.map(([id, term]) => (
-            <div>
-              <dt>
-                <a href={`/glossary#${id}`}>{term.title}</a>
-              </dt>
-              <dd>{term.definition}</dd>
-            </div>
-          ))}
-        </dl>
+        <TermList terms={terms} linkToGlossary />
       </section>
     )}
 
@@ -141,34 +129,6 @@ const terms = Object.entries(glossary).filter(([, term]) => term.check === check
       line-height: 1.6;
       color: var(--text-color-secondary);
     }
-
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      list-style: none;
-      padding: 0;
-      margin: 0;
-
-      a {
-        display: block;
-        padding: 0.25rem 0.75rem;
-        border: 1px solid var(--background-lighter);
-        border-radius: 2rem;
-        font-size: 0.85rem;
-        color: var(--text-color-secondary);
-        transition:
-          border-color 0.25s ease,
-          color 0.25s ease;
-
-        &:hover,
-        &:focus-visible {
-          border-color: var(--primary);
-          color: var(--primary);
-          text-decoration: none;
-        }
-      }
-    }
   }
 
   .body {
@@ -190,62 +150,19 @@ const terms = Object.entries(glossary).filter(([, term]) => term.check === check
       color: var(--text-color-secondary);
     }
 
-    h2 {
-      font-size: 1.4rem;
-      margin-bottom: 0.75rem;
-
-      &:not(:first-child) {
-        margin-top: 2.5rem;
-      }
+    h2:not(:first-child) {
+      margin-top: 2.5rem;
     }
+  }
+
+  article h2,
+  .terms h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
   }
 
   .terms {
     grid-column: 1 / -1;
-
-    h2 {
-      font-size: 1.4rem;
-      margin-bottom: 0.75rem;
-    }
-
-    dl {
-      margin: 0;
-    }
-
-    dl > div {
-      display: grid;
-      grid-template-columns: 16rem 1fr;
-      align-items: baseline;
-      gap: 0.25rem 2rem;
-      padding: 0.75rem 0;
-      border-top: 1px solid var(--primary-transparent);
-
-      @include mobile-down {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    dt {
-      font-weight: 600;
-
-      a {
-        color: var(--text-color);
-        text-decoration: underline var(--primary);
-        text-underline-offset: 0.2em;
-
-        &:hover,
-        &:focus-visible {
-          color: var(--primary);
-        }
-      }
-    }
-
-    dd {
-      margin: 0;
-      max-width: 75ch;
-      line-height: 1.5;
-      color: var(--text-color-secondary);
-    }
   }
 
   aside {
