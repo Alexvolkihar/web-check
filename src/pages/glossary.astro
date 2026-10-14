@@ -4,7 +4,7 @@ import PillLinks from '@components/molecules/PillLinks.astro';
 import TermList from '@components/molecules/TermList.astro';
 import { termGroups } from '@/data/glossary';
 
-const page = new URL(Astro.url.pathname, Astro.site).href;
+const page = new URL(Astro.url.pathname.replace(/\/$/, ''), Astro.site).href;
 
 const description =
   'Quick reference for website security and OSINT terms, like HSTS, DMARC and DNSSEC.';

@@ -210,7 +210,17 @@ if (process.env.DISABLE_GUI && process.env.DISABLE_GUI !== 'false') {
 } else {
   // GUI enabled, and build files present, let's go!!
   notFoundFilePath = path.join(guiPath, '404.html');
-  app.use(express.static('dist/client/'));
+  // Serve built pages at /page as well as /page/, without redirecting between them
+  app.use(async (req, res, next) => {
+    const isPageRequest = ['GET', 'HEAD'].includes(req.method) && /^[\w/-]+$/.test(req.path);
+    if (!isPageRequest) return next();
+    const indexFile = path.posix.join(req.path, 'index.html');
+    if (await fs.promises.stat(path.join(guiPath, indexFile)).catch(() => null)) {
+      req.url = indexFile + req.url.replace(/^[^?]*/, '');
+    }
+    next();
+  });
+  app.use(express.static(guiPath));
   app.use(async (req, res, next) => {
     if (req.path.startsWith(`${API_DIR}/`)) return next();
     const ssrHandlerPath = path.join(__dirname, 'dist', 'server', 'entry.mjs');
