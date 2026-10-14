@@ -237,7 +237,7 @@ if (process.env.DISABLE_GUI && process.env.DISABLE_GUI !== 'false') {
 // Anything left unhandled (which isn't an API endpoint), return a 404
 app.use((req, res, next) => {
   if (!req.path.startsWith(`${API_DIR}/`)) {
-    res.status(404).sendFile(notFoundFilePath);
+    res.status(404).sendFile(notFoundFilePath, { dotfiles: 'allow' });
   } else {
     next();
   }
